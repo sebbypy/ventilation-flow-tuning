@@ -12,6 +12,10 @@ body {
   padding: 0;
 }
 
+form  { display: table;      }
+p     { display: table-row;  }
+label { display: table-cell; }
+input { display: table-cell; }
 
 .wholepicture {
 	width:800px;
@@ -73,6 +77,28 @@ width:500px;
 
 </style>
 
+<h1>Ventilation flow rate adjustment</h1>
+
+<div class="inputdata">
+<h2>Please fill inputs</h2>
+ <form>
+	<p>
+		<label for="numberofvents">Number of vents:</label>
+		<input type="number" id="numberofvents" name="quantity" min="2" value="5" max="8" onchange="initialize(this.valueAsNumber)">
+	</p>
+	<p>
+		<label for="lname">Total flow rate:</label>
+		<input type="number" id="totalflow" name="totalflow" min="50" value="200" max="500" onchange="changeFlow(this.valueAsNumber)">
+	</p>
+</form> 
+</div>
+
+<div class="instructions">
+<h2>Instructions</h2>
+Try to set the different vents to have an equal flow on each branch
+</div>
+
+
 <div class="wholepicture" style="position: relative; left: 0; top: 0;">
 
 <div class="networkdiv">
@@ -119,6 +145,14 @@ width:500px;
 //const $icon = document.querySelector('.icon');
 //const $arrow = document.querySelector('.arrow');
 
+function deleteClassElements(className){
+	var paras = document.getElementsByClassName(className);
+	while(paras[0]) {
+		paras[0].parentNode.removeChild(paras[0]);
+	}
+}
+
+
 const $fan = document.querySelector('.fan');
 const $icon2 = document.querySelector('.wholepicture');
 
@@ -161,182 +195,27 @@ var animations= {};
 
 let initPyodide = loadPyodide()
 
+
+async function loadPythonClasses(){
+	let pyodide = await initPyodide
+	await pyodide.loadPackage("numpy");
+
+	pyodide.runPython(await (await fetch('https://raw.githubusercontent.com/sebbypy/ventilation-flow-tuning/main/ventilationNetwork.py')).text());
+}
+
 async function main(n){
-		let pyodide = await initPyodide
-		await pyodide.loadPackage("numpy");
+	let pyodide = await initPyodide
+	await pyodide.loadPackage("numpy");
+	await loadPythonClasses();
 		
-		window.nvents = n;
+	window.nvents = n;
 		
-		pyodide.runPython(`
+	pyodide.runPython(`
 
 import numpy as np
 from js import nvents
 
-
-class network:
-    
-    def __init__(self):
-
-        self.nVents = nvents
-		
-
-        Qmes = np.ones(nvents)*25+10*np.random.random(nvents)
-        Qmes = Qmes * 200/np.sum(Qmes)
-        
-        self.vents = [vent() for i in range(nvents)]    
-        self.Qtot = np.sum(Qmes)
-     
-	 
-        dpmes = 30
-        
-        
-        dpvents = self.getVentsK()*Qmes**2
-        
-        self.Knetwork = (dpmes-dpvents)/Qmes**2 # remove vent pressure drop in network K calc
-
-
-        self.update()
-
-    def update(self):
-
-        totalK = self.Knetwork + self.getVentsK()
-
-        self.actualFlows = self.solveNonLinear(totalK, self.Qtot, np.ones(self.nVents)*self.Qtot/self.nVents)
-
-    def getFlows(self):
-        return list(self.actualFlows)
-
-    def getPressureDrop(self):
-        totalK = self.Knetwork + self.getVentsK()
-        return np.mean(totalK*self.actualFlows**2)
-
-    def checkDP(self):
-        
-        totalK = self.Knetwork + self.getVentsK()
-        dp = totalK*self.actualFlows**2
-        print('Calculated pressure drops',dp)
-
-    def printState(self):
-        
-        print(self.actualFlows)
-        print("Branch pressure drop",self.Knetwork*self.actualFlows**2)
-        print("Vents pressure drop",self.getVentsK()*self.actualFlows**2)
-        print(self.getVentsK())
-        print(self.actualFlows)
-		
-
-    def setVentPosition(self,ventNummer,position):
-        
-        self.vents[ventNummer].setPosition(position)
-
-
-    def getVentsK(self):
-        
-        return [v.getK() for v in self.vents]
-
-
-    def solveNonLinear(self,K,Qtot,Q0,relax=0.3):
-        
-        Qprev=Q0
-        
-        Qnew = self.solveLinear(K,Qtot,Qprev)
-    
-        res = np.sum((Qprev-Qnew)**2)
-    
-        nit=0    
-    
-        while res>.01:
-            Qprev = Qprev*(1-relax)+Qnew*relax
-            Qnew = self.solveLinear(K,Qtot,Qprev)
-            
-            res = np.sum((Qprev-Qnew)**2)
-            
-            nit+=1
-            if nit>100:
-                print('More than 100 iterations, leaving non linear loop')
-                return 'Error'
-    
-        return Qnew
-    
-    def solveLinear(self,K,Qtot,Qprev):
-    
-        
-        nFlows = len(Qprev)
-        #building matrix
-        
-        A = np.zeros(nFlows**2).reshape(nFlows,nFlows)
-        b = np.zeros(nFlows)
-        
-        
-        for i in range(nFlows-1):
-            
-            A[i,i]=K[i]*Qprev[i]
-            A[i,i+1] = -K[i+1]*Qprev[i+1]
-        
-        """for i in range(nFlows):
-            A[nFlows-1,0]=1
-            A[nFlows-1,1]=1
-            A[nFlows-1,2]=1
-            A[nFlows-1,3]=1
-            b[nFlows-1] = Qtot
-		"""
-        for i in range(nFlows):
-            A[nFlows-1,i]=1
-
-        b[nFlows-1] = Qtot
-		
-        x=np.linalg.solve(A,b)
-    
-        return x
-
-
-
-class vent:
-    
-    def __init__(self):
-        reflow = 25
-    
-        positions = [1,2,3,4,5,6,7,8,15,18]
-    
-        pressuredrop = np.array([50,37,25,15,11,9,7,4,3,2])
-    
-    
-        kreglage = pressuredrop/reflow**2
-        
-        
-        
-        #self.df = pd.DataFrame(index=positions)
-        #self.df['k'] = kreglage
-        
-        self.kValues= kreglage
-        self.positions = positions
-        self.currentPosition = 18
-
-
-    def checkPosition(self,position):
-        
-        if position<self.positions[0] or position>self.positions[-1]:
-            
-            print('Wrong position ',position)
-            print('Positons must be between ',self.positions[0],'and',self.positions[-1])
-            print('Values have been saturated')
-            return
-
-
-    def setPosition(self,position):
-
-        self.checkPosition(position)        
-        self.currentPosition = position
-
-    def getK(self):
-    
-        return np.interp(self.currentPosition,self.positions,self.kValues)
-
-n = network()    
-
-n.printState()
-n.checkDP()    
-
+n = network(nvents)    
 
 `);      
 
@@ -347,15 +226,9 @@ update(n)
 
 function updateDisplay(flows,pressuredrop,stands){
 	
-	console.log(flows);
-	
 	for (let i=0;i<flows.length;i++){
-	
 		document.getElementById("flow"+(i+1)+"display").innerHTML=flows[i].toFixed(1)+" m3/h"
-		//document.getElementById("flow"+(i+1)+"stand").innerHTML=stands[i]
-
 	}
-
 
 	var totalFlow = flows.reduce((partialSum, a) => partialSum + a, 0)
 
@@ -408,19 +281,12 @@ async function update(n){
 window.nVents = n;
 test =[];
 
-console.log("in update");
-console.log(n);
-
 for (let i=0; i<n ; i++){
-	console.log(i+1);
-	console.log(document.getElementById("flow"+(i+1)+"input").value);
 	test.push(document.getElementById("flow"+(i+1)+"input").value);
 }
 
 window.stands = test;
 
-
-//var stands = [window.v1,window.v2,window.v3,window.v4]
 
 let pyodide = await initPyodide;
 /*pyodide.toPy(v1);*/
@@ -458,7 +324,6 @@ function drawNetwork(n){
 		}
 	else{
 		var pictureWidth = n*(WD+20)+2*margin;
-		console.log(pictureWidth)
 	}
 
 	var WT = pictureWidth-2*margin;
@@ -484,12 +349,17 @@ function drawNetwork(n){
 	svgString += "Z"
 
 	//svgString+="v "+H2+" h "+WT+" v -"+H2
-
+	
+	
+	deleteClassElements('network-svg')
+	
 	var draw = SVG().addTo('.networkdiv').size(pictureWidth, 300)
 	draw.addClass('network-svg')
 	var path = draw.path(svgString)
 
 	path.fill('none').stroke({width:4, color: 'black'})
+
+	return DELTA
 
 }
 
@@ -535,16 +405,14 @@ function drawNetworkArrows(n){
 	for (let i=0;i<n;i++){
 		
 		xcenter = margin + WD/2 + i*(WD+DELTA)
-		console.log(xcenter)
-		
 		drawArrow(xcenter,210)
 	}
 }
 
+
 function createInput(number,marginRight,totalNumberOfVents){
 
 	inputForm = document.getElementsByClassName('form-inline')[0]
-	console.log(inputForm)
 
 	var inputElement = document.createElement('input');
 	inputElement.id = 'flow'+number+'input';
@@ -552,48 +420,100 @@ function createInput(number,marginRight,totalNumberOfVents){
     inputElement.type = 'range';
     inputElement.className = 'counter';
 	
-	inputElement.style = "width:60px;margin-right:"+marginRight+"px";
+	inputElement.style = "width:"+60+"px;margin-left:0;margin-right:"+marginRight+"px";
+	
+	if (number==1){
+		inputElement.style = "width:60px;margin-left:10;margin-right:"+marginRight+"px";
+	}	
+	
 	inputForm.appendChild(inputElement);
-	inputElement.setAttribute("value", "18");
+	inputElement.setAttribute("value", "100");
 	inputElement.setAttribute("min", "1");
-	inputElement.setAttribute("max", "18");
+	inputElement.setAttribute("max", "100");
 
 	inputElement.onchange = function(){update(totalNumberOfVents);};
 
 }
 
-function createFlowDisplay(number,width){
+function createFlowDisplay(number,width,marginRight){
 
 	horizontal = document.getElementsByClassName('horizontal')[0];
 	var inputElement = document.createElement('p');
 
 	inputElement.id = 'flow'+number+'display';
+	inputElement.className = 'flowdisplay';
+
 	horizontal.appendChild(inputElement);
 
 
-	inputElement.style = "width:"+width+"px"
+	inputElement.style = "width:"+width+"px;margin-left:0;margin-right:"+marginRight+"px";
+	if (number==1){
+		inputElement.style = "width:60px;margin-left:10;margin-right:"+marginRight+"px";
+	}	
 	
 	inputElement.innerHTML  = "0 m³/h";
 	
 }
 
 
-function createNetWorkInputs(n,WD){
+function createNetWorkInputs(n,spacing){
 
 	for (let i=0;i<n;i++){
 
-		createInput(i+1,WD,n);
-		createFlowDisplay(i+1,60);
+		createInput(i+1,spacing,n);
+		createFlowDisplay(i+1,60,spacing);
 	}
 }
 
 
-var n = 5;
 
-drawNetwork(n)
-drawNetworkArrows(n)
-createNetWorkInputs(n,25)
-main(n)
+
+function initialize(numberOfDucts){
+
+
+	console.log("type")
+	console.log(typeof numberOfDucts)
+
+	deleteClassElements('network-svg')
+	deleteClassElements('counter')
+	deleteClassElements('flowdisplay')
+
+	spaceBetweenDucts = drawNetwork(numberOfDucts)
+	drawNetworkArrows(numberOfDucts)
+	createNetWorkInputs(numberOfDucts,spaceBetweenDucts)
+	main(numberOfDucts)
+
+}
+
+async function changeFlow(flowValue){
+
+	let pyodide = await initPyodide;
+
+	window.newFlowValue = flowValue;
+
+	console.log(flowValue);
+	
+
+	pyodide.runPython(`
+
+from js import newFlowValue
+n.changeTotalFlowRate(newFlowValue)
+flows = n.getFlows()
+dp = n.getPressureDrop()
+`
+);
+
+jsFlows = pyodide.globals.get("flows").toJs();
+pressureDrop = pyodide.globals.get("dp").toFixed(1);
+updateDisplay(jsFlows,pressureDrop,stands);
+
+}
+
+
+
+initialize(6)
+
+
 
 
 
