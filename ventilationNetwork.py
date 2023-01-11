@@ -30,10 +30,9 @@ class network:
 
         self.actualFlows = self.solveNonLinear(totalK, self.Qtot, np.ones(self.nVents)*self.Qtot/self.nVents)
 
-	def changeTotalFlowRate(Qtot):
-		
-		self.Qtot = Qtot
-		self.update()
+    def changeTotalFlowRate(Qtot):
+        self.Qtot = Qtot
+        self.update()
 
     def getFlows(self):
         return list(self.actualFlows)
