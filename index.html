@@ -84,7 +84,7 @@ width:500px;
  <form>
 	<p>
 		<label for="numberofvents">Number of vents:</label>
-		<input type="number" id="numberofvents" name="quantity" min="2" value="5" max="8" onchange="initialize(this.valueAsNumber)">
+		<input type="number" id="numberofvents" name="quantity" min="2" value="5" max="8" onchange="setnumberofducts(this.valueAsNumber)">
 	</p>
 	<p>
 		<label for="lname">Total flow rate:</label>
@@ -95,7 +95,7 @@ width:500px;
 
 <div class="instructions">
 <h2>Instructions</h2>
-Try to set the different vents to have an equal flow on each branch
+Try to set the different vents to have an equal flow on each branch <b> (target = <span id='targetflow'> xx</span> m3/h on each vent </b>)
 </div>
 
 
@@ -128,17 +128,6 @@ Try to set the different vents to have an equal flow on each branch
 
 
 
-<!--<div class="icon">
-  <div class="arrow"></div>  
-</div>
--->
-
-<!--
-<div class="icon2">
-<img id="network" src = "network_alone_plain.svg" alt="Network"/>
-</div>
--->
-
 
 
 <script>
@@ -153,45 +142,10 @@ function deleteClassElements(className){
 }
 
 
-const $fan = document.querySelector('.fan');
-const $icon2 = document.querySelector('.wholepicture');
-
-const $arrow1 = document.querySelector('.arrow1')
-const $arrow2 = document.querySelector('.arrow2')
-const $arrow3 = document.querySelector('.arrow3')
-const $arrow4 = document.querySelector('.arrow4')
 
 
-const $network = document.querySelector('.network');
 
 var animations= {};
-
-/*$fan.onclick = () => {
-  
-  
-   animations['fan']=$fan.animate(
-	{ 
-	transform: 'rotate(360deg)',
-	  }
-  ,{
-    duration: 6000,
-    iterations: Infinity
-  });
-  
-  var i=1
-  for ( let ar of [$arrow1,$arrow2,$arrow3,$arrow4]){
-   animations['arrow'+i]=ar.animate(
-	{ 
-		top: [160,220],
-		rotate: ["0deg","0deg"]
-	}
-	,{
-		duration: 1000,
-		iterations: Infinity
-		});
-	i+=1;
-	}
-}*/
 
 let initPyodide = loadPyodide()
 
@@ -363,7 +317,7 @@ function drawNetwork(n){
 
 }
 
-function drawArrow(xcenter,ypos){
+function drawArrow(xcenter,ypos,ivalue){
 	
 	var margin=0;
 	var W = 10;
@@ -383,9 +337,11 @@ function drawArrow(xcenter,ypos){
 	draw = SVG.find('.network-svg');
 	
 	var path = draw.path(svgString)
+	
+	var text = draw.text(ivalue).attr({x:xcenter-5, y: 260});
 
 	path.fill({color:'#008080'}).stroke({width:1, color: 'black'})
-	
+
 }
 
 function drawNetworkArrows(n){
@@ -405,7 +361,7 @@ function drawNetworkArrows(n){
 	for (let i=0;i<n;i++){
 		
 		xcenter = margin + WD/2 + i*(WD+DELTA)
-		drawArrow(xcenter,210)
+		drawArrow(xcenter,210,(i+1).toString())
 	}
 }
 
@@ -425,6 +381,9 @@ function createInput(number,marginRight,totalNumberOfVents){
 	if (number==1){
 		inputElement.style = "width:60px;margin-left:10;margin-right:"+marginRight+"px";
 	}	
+	if (number==totalNumberOfVents){
+		inputElement.style = "width:60px;margin-left:10;margin-right:"+"0"+"px";
+	}	
 	
 	inputForm.appendChild(inputElement);
 	inputElement.setAttribute("value", "100");
@@ -435,7 +394,7 @@ function createInput(number,marginRight,totalNumberOfVents){
 
 }
 
-function createFlowDisplay(number,width,marginRight){
+function createFlowDisplay(number,width,marginRight,totalNumberOfVents){
 
 	horizontal = document.getElementsByClassName('horizontal')[0];
 	var inputElement = document.createElement('p');
@@ -450,6 +409,9 @@ function createFlowDisplay(number,width,marginRight){
 	if (number==1){
 		inputElement.style = "width:60px;margin-left:10;margin-right:"+marginRight+"px";
 	}	
+	if (number==totalNumberOfVents){
+		inputElement.style = "width:60px;margin-left:10;margin-right:"+"0"+"px";
+	}	
 	
 	inputElement.innerHTML  = "0 m³/h";
 	
@@ -461,18 +423,22 @@ function createNetWorkInputs(n,spacing){
 	for (let i=0;i<n;i++){
 
 		createInput(i+1,spacing,n);
-		createFlowDisplay(i+1,60,spacing);
+		createFlowDisplay(i+1,60,spacing,n);
 	}
 }
 
+function adjustTarget(){
+	flow = parseFloat(document.getElementById("totalflow").value)
+	vents = parseInt(document.getElementById("numberofvents").value)
+	
+	targetFlow = flow/vents
+	
+	document.getElementById("targetflow").innerHTML = targetFlow.toFixed(1)
+
+}
 
 
-
-function initialize(numberOfDucts){
-
-
-	console.log("type")
-	console.log(typeof numberOfDucts)
+function setnumberofducts(numberOfDucts){
 
 	deleteClassElements('network-svg')
 	deleteClassElements('counter')
@@ -483,6 +449,9 @@ function initialize(numberOfDucts){
 	createNetWorkInputs(numberOfDucts,spaceBetweenDucts)
 	main(numberOfDucts)
 
+	adjustTarget()
+
+
 }
 
 async function changeFlow(flowValue){
@@ -490,9 +459,6 @@ async function changeFlow(flowValue){
 	let pyodide = await initPyodide;
 
 	window.newFlowValue = flowValue;
-
-	console.log(flowValue);
-	
 
 	pyodide.runPython(`
 
@@ -507,13 +473,15 @@ jsFlows = pyodide.globals.get("flows").toJs();
 pressureDrop = pyodide.globals.get("dp").toFixed(1);
 updateDisplay(jsFlows,pressureDrop,stands);
 
+adjustTarget()
+
 }
 
 
 
-initialize(6)
+setnumberofducts(parseInt(document.getElementById('numberofvents').value))
 
-
+adjustTarget()
 
 
 
