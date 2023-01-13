@@ -4,34 +4,39 @@
       <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
       <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
 	  <script type="text/javascript" src="ventilation_functions.js"></script> 
+	  <script type="text/javascript" src="translations.js"></script> 
 	  <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
 
-<h1>Ventilation flow rate adjustment</h1>
+<h1 lng-tag="title">Title</h1>
 
 <div class="inputdata">
-<h2>Please fill inputs</h2>
+<h2 lng-tag="fillinputs">Please fill inputs</h2>
  <form>
 	<p>
-		<label for="numberofvents">Number of vents:</label>
+		<label lng-tag="numberofvents" for="numberofvents">Number of vents:</label>
 		<input type="number" id="numberofvents" name="quantity" min="2" value="5" max="8" onchange="setnumberofducts(this.valueAsNumber)">
 	</p>
 	<p>
-		<label for="lname">Total flow rate:</label>
+		<label lng-tag="totalflowrate" for="lname">Total flow rate:</label>
 		<input type="number" id="totalflow" name="totalflow" min="50" value="200" max="500" onchange="changeFlow(this.valueAsNumber)">
 	</p>
 </form> 
 </div>
 
 <div class="instructions">
-<h2>Instructions</h2>
-Try to set the different vents to have an equal flow on each branch <b> (target = <span id='targetflow'>xx</span> m3/h on each vent </b>)
+<h2 lng-tag="instructions-title">Instructions</h2>
+<span lng-tag="instructions-content">Try to set the different vents to have an equal flow on each branch </span> 
+<b>( <span lng-tag="target">target</span> = <span id='targetflow'></span> <span lng-tag="targettext"> m3/h on each vent</span> </b>)
+<br>
+<span lng-tag="instructions-criteria"></span>
+</br>
 </div>
 
 
-<div class="wholepicture" style="position: relative; left: 0; top: 0;">
+<div class="wholepicture" style="position: relative; left: 0; top: 0;margin-top:40px">
 
 <div class="networkdiv">
 <!--<img src="network_alone_plain.svg" width="500" class="network"/>-->
@@ -46,13 +51,16 @@ Try to set the different vents to have an equal flow on each branch <b> (target 
 
 
 <div>
-<h2>Number of operations: <span id="changeCounter">0</span></h2>
+<h2> <span lng-tag="numberofoperations">Number of operations</span>:  <span id="changeCounter">0</span></h2>
+</div>
+
+<div>
+<h2><span id="successflag"> </span>
 </div>
 
 
 
-
-<div>
+<!--<div>
 <h2 id="totalFlow">Total flow rate: 150 m³/h</h2>
 </div>
 <div>
@@ -61,7 +69,7 @@ Try to set the different vents to have an equal flow on each branch <b> (target 
 <div>
 <h2 id="power">Electric power: 0 W</h2>
 </div>
-
+-->
 
 </div>
 
@@ -81,6 +89,7 @@ setnumberofducts(parseInt(document.getElementById('numberofvents').value))
 
 adjustTarget()
 
+translatepage('FR')
 
 
 </script>

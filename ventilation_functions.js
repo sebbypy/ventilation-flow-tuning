@@ -41,15 +41,10 @@ function updateDisplay(flows,pressuredrop,stands){
 
 	var totalFlow = flows.reduce((partialSum, a) => partialSum + a, 0)
 
-	document.getElementById("totalFlow").innerHTML="Total flow rate: "+totalFlow.toFixed(0)+" m³/h";
-
-	document.getElementById("dp").innerHTML="Actual pressure drop: "+pressuredrop+" Pa";
-
-	var power =  totalFlow * pressuredrop/3600;
-
-	document.getElementById("power").innerHTML="Electric power: "+power.toFixed(1)+" W";
-
-
+	//document.getElementById("totalFlow").innerHTML="Total flow rate: "+totalFlow.toFixed(0)+" m³/h";
+	//document.getElementById("dp").innerHTML="Actual pressure drop: "+pressuredrop+" Pa";
+	//var power =  totalFlow * pressuredrop/3600;
+	//document.getElementById("power").innerHTML="Electric power: "+power.toFixed(1)+" W";
 	//updateVelocity(flows)
 	
 }
@@ -106,8 +101,7 @@ function setNumberOfVentChanges(value){
 
 }
 	
-	
-	
+
 
 
 async function update(n){
@@ -145,8 +139,37 @@ jsFlows = pyodide.globals.get("flows").toJs();
 pressureDrop = pyodide.globals.get("dp").toFixed(1);
 updateDisplay(jsFlows,pressureDrop,stands);
 
+showHideSuccessFlag(jsFlows);
+
 }
 
+
+function checkSuccess(flows){
+
+	target = getTargetFlow()
+
+	for (let i=0;i<flows.length;i++){
+		
+		if (Math.abs(flows[i]-target) > 1){
+			
+			return false
+		}
+	}
+	
+	return true
+}
+
+function showHideSuccessFlag(jsFlows){
+
+	if (checkSuccess(jsFlows)){
+		document.getElementById('successflag').innerHTML = 'Réglage réussi';
+	}
+	else{
+		document.getElementById('successflag').innerHTML = '';
+	}
+}
+
+	
 
 function drawNetwork(n){
 
@@ -310,13 +333,19 @@ function createNetWorkInputs(n,spacing){
 	}
 }
 
-function adjustTarget(){
+function getTargetFlow(){
+
 	flow = parseFloat(document.getElementById("totalflow").value)
 	vents = parseInt(document.getElementById("numberofvents").value)
 	
 	targetFlow = flow/vents
+		
+	return targetFlow
+
+}
+function adjustTarget(){
 	
-	document.getElementById("targetflow").innerHTML = targetFlow.toFixed(1)
+	document.getElementById("targetflow").innerHTML = getTargetFlow().toFixed(1)
 
 }
 
