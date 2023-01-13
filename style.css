@@ -1,72 +1,139 @@
 body {
-  <!--background-color: #00b894;-->
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
+    --fbc-blue-60: #0060df;
+    --fbc-blue-70: #003eaa;
+    --fbc-gray-20: #ededf0;
+    --fbc-light-gray: #F0F0F4;
+    --fbc-white: #ffffff;
+    --fbc-borders: 1px solid #ededf0;
+    --fbc-primary-text: #15141A;
+    --fbc-secondary-text: #5B5B66;
+    --fbc-font-size: 13px;
+    background-color: #eee;
+    color: #4e636d;
+    font-family: "Open Sans","Helvetica Neue",sans-serif;
+}
+
+.layout-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    height: 64px;
+    box-shadow: 0 1px 3px #646464;
+    padding: 0 10px;
+}
+
+.container{
+    max-width: 1320px;
+    width: 100%;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    margin-right: auto;
+    margin-left: auto;
+    padding-top: 20px;
+    margin-bottom: 60px;
+    font-family: "Roboto", sans-serif;
+}
+
+.logo{
+    height: 50px;
+    max-height: 50px;
 }
 
 form  { display: table;      }
 p     { display: table-row;  }
 label { display: table-cell; }
-input { display: table-cell; }
+
+input { display: table-cell; 
+        width: 100px;
+}
+
+.numberinput{
+    margin-left:5px;
+    border-radius: 3px 0 0 3px;
+    border: 1px solid #005979;
+    border-right-color: rgb(0, 89, 121);
+    border-right-color: #93aab2;
+    font-size: 16px;
+    padding: 5px 5px ;
+    color: #4f636d;
+    outline: none;
+    box-sizing: border-box;
+    font-family: "Roboto",sans-serif;}
+}
+.Select-module_input__3pZ0Q{
+    padding: 5px 6px 5px 9px;
+    border: 1px solid #005979;
+    border-radius: 3px;
+    font-size: 16px;
+    padding: 10px 18px;
+    display: flex;
+    background-color: #fff;
+    line-height: 28px;
+    font-family: "Roboto",sans-serif;}
+
+}
 
 .wholepicture {
-	width:800px;
-	margin: auto;
-	<!--border: 3px solid green;-->
+    width:800px;
+    margin: auto;
+    background-color: #f8fafb
 }
 .network
 {
-width:500px;
-  position: relative;
-  top: 0;
-  left: 0;
+    width:500px;
+    position: relative;
+    top: 0;
+    left: 0;
 }
 .fan
 {
-	position: absolute;
-	top: 20px;
-	left: 226px;	
+    position: absolute;
+    top: 20px;
+    left: 226px;	
 }
 .arrow1, .arrow2, .arrow3, .arrow4 {
-	height:60px;
-	width:20px;
-	position: absolute;
-	top: 160px;
+    height:60px;
+    width:20px;
+    position: absolute;
+    top: 160px;
 }
 
 /*.counter {
-	width:60px;
+        width:60px;
 }*/
 
 .form-inline , .horizontal{
-  display: flex;
-  flex-flow: row wrap;
-  align-items: center;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
 }
 
 .form-inline input{
-  vertical-align: middle;
-  background-color: #fff;
-  border: 1px solid #ddd;
-/*  margin: 0px 0px 0px 0;
-  padding: 0px;
-  background-color: #fff;
-  border: 1px solid #ddd;*/
+    vertical-align: middle;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    /*  margin: 0px 0px 0px 0;
+      padding: 0px;
+      background-color: #fff;
+      border: 1px solid #ddd;*/
 }
 .ph{
-  margin: 0px 80px 0px 0;
-  padding: 0px;
+    margin: 0px 80px 0px 0;
+    padding: 0px;
 }
 .phstand{
-  margin: 0px 130px 1px 0px;
-  padding: 5px;
+    margin: 0px 130px 1px 0px;
+    padding: 5px;
 }
 .flowstand{
-	margin-top:0px;
-	position:relative;
-	left: 25px;
-	}
+    margin-top:0px;
+    position:relative;
+    left: 25px;
+}
 
 #successflag{
-  color: green;
+    color: green;
 }

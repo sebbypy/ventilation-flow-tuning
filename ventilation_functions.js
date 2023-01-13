@@ -6,14 +6,14 @@ function deleteClassElements(className){
 }
 
 async function loadPythonClasses(){
-	let pyodide = await initPyodide
+	let pyodide = await initPyodide;
 	await pyodide.loadPackage("numpy");
 
 	pyodide.runPython(await (await fetch('https://raw.githubusercontent.com/sebbypy/ventilation-flow-tuning/main/ventilationNetwork.py')).text());
 }
 
 async function main(n){
-	let pyodide = await initPyodide
+	let pyodide = await initPyodide;
 	await pyodide.loadPackage("numpy");
 	await loadPythonClasses();
 		
@@ -28,7 +28,7 @@ n = network(nvents)
 
 `);      
 
-update(n)
+update(n);
 
 		
 }
@@ -83,7 +83,7 @@ async function ventSettingChanged(changedvent,numberofvents){
 	
 	currentValue = getNumberOfVentChanges()	;
 	
-	if (changedvent != lastChangedVent){
+	if (changedvent !== lastChangedVent){
 		setNumberOfVentChanges(currentValue + 1);
 	}
 	
@@ -92,12 +92,12 @@ async function ventSettingChanged(changedvent,numberofvents){
 
 
 function getNumberOfVentChanges(){
-	return parseInt(document.getElementById('changeCounter').innerHTML)
+	return parseInt(document.getElementById('changeCounter').innerHTML);
 }
 	
 
 function setNumberOfVentChanges(value){
-	document.getElementById('changeCounter').innerHTML = value
+	document.getElementById('changeCounter').innerHTML = value;
 
 }
 	

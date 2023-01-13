@@ -1,97 +1,109 @@
 <!DOCTYPE html>
 <html>
-<head>
-      <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
-      <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
-	  <script type="text/javascript" src="ventilation_functions.js"></script> 
-	  <script type="text/javascript" src="translations.js"></script> 
-	  <link rel="stylesheet" href="./style.css">
-</head>
+    <head>
+        <title>Ventilation</title>
+        <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
+        <script type="text/javascript" src="ventilation_functions.js"></script> 
+        <script type="text/javascript" src="translations.js"></script> 
+        <link rel="stylesheet" href="./style.css">
+    </head>
 
-<body>
+    <body>
 
-<h1 lng-tag="title">Title</h1>
+        <header class="layout-header">
+            <span class="logo-full">    
+                <img class="logo" src="https://images.prismic.io/bbri/55e684ca-e04b-4dc1-92b4-2859a8bc6cad_WTC_00001_L_Horizontaal_pos_RGB.png?auto=compress,format&amp;rect=0,0,800,125&amp;w=1184&amp;h=185" alt="BBRI logo">
+            </span>
+            <div class="select-language">
+                <div class="Select-module_select__3oApo Select-module_withoutLabel__2gIFt">
+                    <div class="Select-module_input__3pZ0Q">FR<div class="Select-module_controls__7xN2h">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div></div>
+            </div>            
+        </header>
 
-<div class="inputdata">
-<h2 lng-tag="fillinputs">Please fill inputs</h2>
- <form>
-	<p>
-		<label lng-tag="numberofvents" for="numberofvents">Number of vents:</label>
-		<input type="number" id="numberofvents" name="quantity" min="2" value="5" max="8" onchange="setnumberofducts(this.valueAsNumber)">
-	</p>
-	<p>
-		<label lng-tag="totalflowrate" for="lname">Total flow rate:</label>
-		<input type="number" id="totalflow" name="totalflow" min="50" value="200" max="500" onchange="changeFlow(this.valueAsNumber)">
-	</p>
-</form> 
-</div>
+        <main class="container">
+            <h1 lng-tag="title">Title</h1>
 
-<div class="instructions">
-<h2 lng-tag="instructions-title">Instructions</h2>
-<span lng-tag="instructions-content">Try to set the different vents to have an equal flow on each branch </span> 
-<b>( <span lng-tag="target">target</span> = <span id='targetflow'></span> <span lng-tag="targettext"> m3/h on each vent</span> </b>)
-<br>
-<span lng-tag="instructions-criteria"></span>
-</br>
-</div>
+            <div class="inputdata">
+                <h2 lng-tag="fillinputs">Please fill inputs</h2>
+                <form>
+                    <p>
+                        <label lng-tag="numberofvents" for="numberofvents">Number of vents:</label>
+                        <input class="numberinput" type="number" id="numberofvents" name="quantity" min="2" value="5" max="8" onchange="setnumberofducts(this.valueAsNumber)">
+                    </p>
+                    <p>
+                        <label lng-tag="totalflowrate" for="lname">Total flow rate:</label>
+                        <input class="numberinput" type="number" id="totalflow" name="totalflow" min="50" value="200" max="500" onchange="changeFlow(this.valueAsNumber)">
+                    </p>
+                </form> 
+            </div>
 
-
-<div class="wholepicture" style="position: relative; left: 0; top: 0;margin-top:40px">
-
-<div class="networkdiv">
-<!--<img src="network_alone_plain.svg" width="500" class="network"/>-->
-</div>
-<img src="fan2.svg" class="fan" width="48"/>
-
-<form class="form-inline">
-</form>
-
-<div class="horizontal">
-</div>
+            <div class="instructions">
+                <h2 lng-tag="instructions-title">Instructions</h2>
+                <span lng-tag="instructions-content">Try to set the different vents to have an equal flow on each branch </span> 
+                <b>( <span lng-tag="target">target</span> = <span id='targetflow'></span> <span lng-tag="targettext"> m3/h on each vent</span> </b>)
+                <br>
+                <span lng-tag="instructions-criteria"></span>
+            </div>
 
 
-<div>
-<h2> <span lng-tag="numberofoperations">Number of operations</span>:  <span id="changeCounter">0</span></h2>
-</div>
+            <div class="wholepicture" style="position: relative; left: 0; top: 0;margin-top:40px">
 
-<div>
-<h2><span id="successflag"> </span>
-</div>
+                <div class="networkdiv">
+                    <!--<img src="network_alone_plain.svg" width="500" class="network"/>-->
+                </div>
+                <img src="fan2.svg" class="fan" width="48"/>
+
+                <form class="form-inline">
+                </form>
+
+                <div class="horizontal">
+                </div>
 
 
+            </div>
 
-<!--<div>
-<h2 id="totalFlow">Total flow rate: 150 m³/h</h2>
-</div>
-<div>
-<h2 id="dp">Acutal pressure drop: 20 Pa</h2>
-</div>
-<div>
-<h2 id="power">Electric power: 0 W</h2>
-</div>
--->
+            <div>
+                <h2> <span lng-tag="numberofoperations">Number of operations</span>:  <span id="changeCounter">0</span></h2>
+            </div>
 
-</div>
-
+            <div>
+                <h2 id="successflag"> </h2>
+            </div>
 
 
 
+            <!--<div>
+            <h2 id="totalFlow">Total flow rate: 150 m³/h</h2>
+            </div>
+            <div>
+            <h2 id="dp">Acutal pressure drop: 20 Pa</h2>
+            </div>
+            <div>
+            <h2 id="power">Electric power: 0 W</h2>
+            </div>
+            -->
 
-<script>
-//const $icon = document.querySelector('.icon');
-//const $arrow = document.querySelector('.arrow');
-
-let initPyodide = loadPyodide()
-
-let lastChangedVent = 0
-
-setnumberofducts(parseInt(document.getElementById('numberofvents').value))
-
-adjustTarget()
-
-translatepage('FR')
+        </main>
 
 
-</script>
-</body>
+
+        <script>
+            //const $icon = document.querySelector('.icon');
+            //const $arrow = document.querySelector('.arrow');
+
+            let initPyodide = loadPyodide();
+
+            let lastChangedVent = 0;
+
+            setnumberofducts(parseInt(document.getElementById('numberofvents').value));
+
+            adjustTarget();
+
+            translatepage('FR');
+
+
+        </script>
+    </body>
 </html>
