@@ -146,11 +146,13 @@ showHideSuccessFlag(jsFlows);
 
 function checkSuccess(flows){
 
+	tolerance=1
+
 	target = getTargetFlow()
 
 	for (let i=0;i<flows.length;i++){
 		
-		if (Math.abs(flows[i]-target) > 1){
+		if (Math.abs(flows[i]-target) > tolerance){
 			
 			return false
 		}
