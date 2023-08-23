@@ -1,15 +1,21 @@
 class network:
     
-    def __init__(self,nVents,initFlow=200):
+    def __init__(self,nVents,initFlow=200,initType='random'):
 
         self.nVents = nVents
 
         meanFlow = initFlow/self.nVents
 
+        if initType == 'random':
 
-        Qmes = np.ones(nvents)*meanFlow+meanFlow*(np.random.random(nvents)-0.5)
-        Qmes = Qmes * initFlow/np.sum(Qmes)
+            Qmes = np.ones(nvents)*meanFlow+meanFlow*(np.random.random(nvents)-0.5)
+            Qmes = Qmes * initFlow/np.sum(Qmes)
         
+
+        else: #inittyp == 'uniform':
+            Qmes = np.ones(nvents)*meanFlow
+
+
         self.vents = [vent() for i in range(nvents)]    
         self.Qtot = np.sum(Qmes)
      
