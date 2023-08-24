@@ -3,7 +3,7 @@ import numpy as np
 
 class network:
     
-    def __init__(self,nVents,initFlow=200,initType='random',initValues=[]):
+    def __init__(self,nVents,initFlow=200,initType='random',initValues=[],fanstand=0.5):
 
         self.nVents = nVents
 
@@ -22,7 +22,9 @@ class network:
             if len(initValues) != nVents:
                 raise ValueError("no correct number of input values")
                 
-            Qmes = np.array(initValues)/np.sum(initValues)*initFlow
+            #Qmes = np.array(initValues)/np.sum(initValues)*initFlow
+            Qmes = np.array(initValues)
+           
             
         else:
             raise ValueError("wrong option for inittype")
