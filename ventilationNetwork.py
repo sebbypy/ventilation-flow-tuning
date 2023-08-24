@@ -1,6 +1,9 @@
+import numpy as np
+
+
 class network:
     
-    def __init__(self,nVents,initFlow=200,initType='random'):
+    def __init__(self,nVents,initFlow=200,initType='random',initValues=[]):
 
         self.nVents = nVents
 
@@ -8,15 +11,25 @@ class network:
 
         if initType == 'random':
 
-            Qmes = np.ones(nvents)*meanFlow+meanFlow*(np.random.random(nvents)-0.5)
+            Qmes = np.ones(nVents)*meanFlow+meanFlow*(np.random.random(nVents)-0.5)
             Qmes = Qmes * initFlow/np.sum(Qmes)
         
 
-        else: #inittyp == 'uniform':
-            Qmes = np.ones(nvents)*meanFlow
+        elif initType == 'uniform': 
+            Qmes = np.ones(nVents)*meanFlow
+
+        elif initType == 'userDefined':
+            if len(initValues) != nVents:
+                raise ValueError("no correct number of input values")
+                
+            Qmes = np.array(initValues)/np.sum(initValues)*initFlow
+            
+        else:
+            raise ValueError("wrong option for inittype")
+            
 
 
-        self.vents = [vent() for i in range(nvents)]    
+        self.vents = [vent() for i in range(nVents)]    
         self.Qtot = np.sum(Qmes)
      
 	 
