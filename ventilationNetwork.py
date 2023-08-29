@@ -20,14 +20,14 @@ class network:
 
         elif initType == 'userDefined':
             if len(initValues) != nVents:
-                raise ValueError("no correct number of input values")
+                raise ValueError("py: no correct number of input values")
                 
             #Qmes = np.array(initValues)/np.sum(initValues)*initFlow
             Qmes = np.array(initValues)
            
             
         else:
-            raise ValueError("wrong option for inittype")
+            raise ValueError("py: wrong option for inittype")
             
 
 
@@ -66,7 +66,7 @@ class network:
         
         totalK = self.Knetwork + self.getVentsK()
         dp = totalK*self.actualFlows**2
-        print('Calculated pressure drops',dp)
+        print('py: Calculated pressure drops',dp)
 
     def printState(self):
         
@@ -105,7 +105,7 @@ class network:
             
             nit+=1
             if nit>100:
-                print('More than 100 iterations, leaving non linear loop')
+                print('py: More than 100 iterations, leaving non linear loop')
                 return 'Error'
     
         return Qnew
@@ -170,9 +170,9 @@ class vent:
         
         if position<self.positions[0] or position>self.positions[-1]:
             
-            print('Wrong position ',position)
-            print('Positons must be between ',self.positions[0],'and',self.positions[-1])
-            print('Values have been saturated')
+            print('py: Wrong position ',position)
+            print('py: Positons must be between ',self.positions[0],'and',self.positions[-1])
+            print('py: Values have been saturated')
             return
 
 
