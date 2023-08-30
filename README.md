@@ -28,3 +28,7 @@ If the total initial flow rate and the sum of the target flow rates are equal, t
 
 The tuning of the network is considered sucessfull if the difference between the target and actual flow rates is less than 2 m³/h for each branch. 
 
+## Try it
+
+The tool can be used online here :  https://sebbypy.github.io/ventilation-flow-tuning/
+
