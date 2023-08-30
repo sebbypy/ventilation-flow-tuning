@@ -86,11 +86,10 @@ function checkSuccess(flows){
 
 	targets = getTargetFlows()
 
-    console.log(targets)
 
 	for (let i=0;i<flows.length;i++){
 		
-		if (Math.abs(flows[i]-targets[i]) > tolerance){
+		if (Math.abs(flows[i].toFixed(0)-targets[i]) > tolerance){
 			
 			return false
 		}
