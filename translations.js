@@ -8,26 +8,70 @@ var translationsDataBase={
 		{"EN":"Network data",
 		"FR":"Données du réseau",
 		"NL":"Netwerk data"},
-	"numberofvents":
+    "initivalvaluessection":
+        {"EN":"Network initialization",
+		"FR":"Données d'initialisation du réseau",
+		"NL":"Netwerk initialisatie"},
+    "numberofvents":
 		{"EN":"Number of vents",
 		"FR":"Nombre de bouches",
 		"NL":"Aantal ventielen"},
-	"totalflowrate":
-		{"EN":"Total ventilation flow rate",
-		"FR":"Débit total de ventilation",
-		"NL":"Totale ventilatiedebiet"},
+    "inittotalflowrate":
+        {"EN":"Total flow rate for initialization (50% fan speed)",
+		"FR":"Débit total pour l'initialisation (vitesse du ventilateur à 50%)",
+		"NL":"Totaal debiet voor initializatie (50% ventilator capaciteit"},        
+    "inittype":
+        {"EN":"Network pressure losses definition",
+		"FR":"Définition des pertes de pression du réseau",
+		"NL":"Definitie van netwerk drukverliezen"},        
+    "random_pressure_drops":
+        {"EN":"Random initial flow rates",
+		"FR":"Débits aléatoires",
+		"NL":"Random debieten"},        
+    "balanced_pressure_drops":
+        {"EN":"Uniform flow rates",
+		"FR":"Débits uniformes",
+		"NL":"Gelijk debieten"},
+    "from_user_defined_flow_rates":
+        {"EN":"User defined flow rates",
+		"FR":"Débits définis par l'utilisateur",
+		"NL":"Debieten genefineerd door gebruiker"},    
+    "initial_flow_rates":
+        {"EN":"Initial flow rates",
+		"FR":"Débits initiaux",
+		"NL":"Initiele debieten"},    
+	"targetvaluessection":
+		{"EN":"Target flow rates",
+		"FR":"Débits à atteindre",
+		"NL":"Debieten te bereiken"},
+	"targettype":
+		{"EN":"Definition",
+		"FR":"Définition",
+		"NL":"Definitie"},
+	"uniform_target":
+		{"EN":"Uniform flow rates",
+		"FR":"Débits uniformes",
+		"NL":"Gelijk debieten"},
+    "user_defined_targets":
+        {"EN":"User defined flow rates",
+		"FR":"Débits définis par l'utilisateur",
+		"NL":"Debieten genefineerd door gebruiker"},    
+    "targetvalues":{
+        "EN":"Target values",
+		"FR":"Valeurs à atteindre",
+		"NL":"Doelwaardes"},    
 	"instructions-title":
 		{"EN":"Instructions",
 		"FR":"Instructions",
 		"NL":"Instructies"},
 	"instructions-content":
-		{"EN":"Set the different vents so that the flow is equal at each vent",
-		"FR":"Régler les bouches pour que le débit soit identique à chaque branche",
-		"NL":"Stel de ventielen af zodat het debiet is identiek voor elke tak"},
+		{"EN":"Set the different vents so that the flow is correct at each vent",
+		"FR":"L'objectif est d'atteindre le bon débit à chaque bouche",
+		"NL":"Stel de ventielen af zodat het debiet in elke tak correct is"},
 	"instructions-criteria":
 		{"EN":"For this example, the setting is considered as sucessfull if the error in flow rate is < 2 m³/h",
-		"FR":"Pour cet exercice, le réglage est considéré comme réussi si l'erreur est < 2 m³/h pour chaque bouche. Les curseurs peuvent être déplacés avec la souris. Pour un réglage fin, il est possible de déplacer les curseurs avec le clavier (flèches haut et bas)",
-		"NL":"Voor die oefening, de afstelling is succesvol als de fout is <2 m³/h voor elke ventiel"},
+		"FR":"Pour cet exemple, le réglage est considéré comme réussi si l'erreur est < 2 m³/h pour chaque bouche.",
+		"NL":"Voor die voorbeeld, de afstelling is succesvol als de fout is <2 m³/h voor elke ventiel"},
 	"target":
 		{"EN":"target",
 		"FR":"objectif",
@@ -39,7 +83,16 @@ var translationsDataBase={
 	"numberofoperations":
 		{"EN":"Number of operations",
 		"FR":"Nombre d'opérations",
-		"NL":"Aantal operaties"}
+		"NL":"Aantal operaties"},
+    "current_flows":
+    	{"EN":"Current flows",
+		"FR":"Débits actuels",
+		"NL":"Huidige debieten"},
+    "target_flows":
+        {"EN":"Targets",
+        "FR":"Objectif",
+        "NL":"Doel"
+        }
 }
 
 

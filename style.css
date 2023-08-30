@@ -15,6 +15,7 @@ body {
     font-family: "Open Sans","Helvetica Neue",sans-serif;
 }
 
+
 .layout-header{
     display: flex;
     justify-content: space-between;
@@ -23,6 +24,9 @@ body {
     height: 64px;
     box-shadow: 0 1px 3px #646464;
     padding: 0 10px;
+    color: #4e636d;
+    font-family: "Roboto", sans-serif;
+
 }
 
 .container{
@@ -35,6 +39,15 @@ body {
     padding-top: 20px;
     margin-bottom: 60px;
     font-family: "Roboto", sans-serif;
+}
+
+#language{
+    background-color: white;
+    margin: 10px;
+    font-size: 18px;
+    border-radius: 3px;
+    padding: 6px;
+    width:60px;
 }
 
 .logo{
@@ -50,7 +63,7 @@ input { display: table-cell;
         width: 100px;
 }
 
-.numberinput{
+.numberinput, .dropdowninput{
     margin-left:5px;
     border-radius: 3px 0 0 3px;
     border: 1px solid #005979;
@@ -91,7 +104,7 @@ input { display: table-cell;
 .fan
 {
     position: absolute;
-    top: 20px;
+    top: 70px;
     left: 226px;	
 }
 .arrow1, .arrow2, .arrow3, .arrow4 {
@@ -110,6 +123,13 @@ input { display: table-cell;
     flex-flow: row wrap;
     align-items: center;
 }
+
+#fanstand{
+    margin-left: 200px;
+    width: 100px;
+}
+    
+
 
 .form-inline input{
     vertical-align: middle;

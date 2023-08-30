@@ -5,46 +5,21 @@ function deleteClassElements(className){
 	}
 }
 
-async function loadPythonClasses(){
-	let pyodide = await initPyodide;
-	await pyodide.loadPackage("numpy");
 
-	pyodide.runPython(await (await fetch('https://raw.githubusercontent.com/sebbypy/ventilation-flow-tuning/main/ventilationNetwork.py')).text());
-}
-
-async function main(n){
-	let pyodide = await initPyodide;
-	await pyodide.loadPackage("numpy");
-	await loadPythonClasses();
-		
-	window.nvents = n;
-		
-	pyodide.runPython(`
-
-import numpy as np
-from js import nvents
-
-n = network(nvents)    
-
-`);      
-
-update(n);
-
-		
-}
-
-function updateDisplay(flows,pressuredrop,stands){
+function updateCurrentFlowRateDisplay(flows,pressuredrop,stands){
 	
+    
 	for (let i=0;i<flows.length;i++){
-		document.getElementById("flow"+(i+1)+"display").innerHTML=flows[i].toFixed(1)+" m3/h"
+		document.getElementById("flow"+(i+1)+"display").innerHTML=flows[i].toFixed(0)+" m³/h"
 	}
 
-	var totalFlow = flows.reduce((partialSum, a) => partialSum + a, 0)
+
+	//var totalFlow = flows.reduce((partialSum, a) => partialSum + a, 0)
 
 	//document.getElementById("totalFlow").innerHTML="Total flow rate: "+totalFlow.toFixed(0)+" m³/h";
 	//document.getElementById("dp").innerHTML="Actual pressure drop: "+pressuredrop+" Pa";
 	//var power =  totalFlow * pressuredrop/3600;
-	//document.getElementById("power").innerHTML="Electric power: "+power.toFixed(1)+" W";
+	//document.getElementById("power").innerHTML="Electric power: "+power.toFixed(0)+" W";
 	//updateVelocity(flows)
 	
 }
@@ -104,55 +79,18 @@ function setNumberOfVentChanges(value){
 
 
 
-async function update(n){
-
-window.nVents = n;
-test =[];
-
-for (let i=0; i<n ; i++){
-	test.push(document.getElementById("flow"+(i+1)+"input").value);
-}
-
-window.stands = test;
-
-
-let pyodide = await initPyodide;
-/*pyodide.toPy(v1);*/
-
-pyodide.runPython(`
-
-from js import stands
-from js import nvents
-
-stands = stands.to_py()
-
-for i in range(nvents):
-	n.setVentPosition(i, float(stands[i]))    
-	
-n.update()
-flows = n.getFlows()
-dp = n.getPressureDrop()
-`
-);
-
-jsFlows = pyodide.globals.get("flows").toJs();
-pressureDrop = pyodide.globals.get("dp").toFixed(1);
-updateDisplay(jsFlows,pressureDrop,stands);
-
-showHideSuccessFlag(jsFlows);
-
-}
-
 
 function checkSuccess(flows){
 
-	tolerance=1
+	tolerance=2
 
-	target = getTargetFlow()
+	targets = getTargetFlows()
+
+    console.log(targets)
 
 	for (let i=0;i<flows.length;i++){
 		
-		if (Math.abs(flows[i]-target) > tolerance){
+		if (Math.abs(flows[i]-targets[i]) > tolerance){
 			
 			return false
 		}
@@ -302,15 +240,115 @@ function createInput(number,marginRight,totalNumberOfVents){
 
 }
 
+function setVentPosition(number,value){
+
+    ventPositionId = 'flow'+number+'input';
+    ventPositionElement = document.getElementById(ventPositionId)
+    
+    if (ventPositionElement != null){
+        
+        ventPositionElement.value = value
+    }
+}
+
+function resetAllVentPositions(){
+    
+    
+    n = parseInt(document.getElementById("numberofvents").value)
+
+   	for (let i=0;i<n;i++){
+        
+        setVentPosition(i,100)
+    
+    }
+}
+
+
+
+function createFanInput(){
+    
+    
+    parentElement = document.getElementById("fancontroldiv")
+    inputElement = document.getElementById('fanstanddisplay')
+    
+    console.log(inputElement)
+
+
+    if (inputElement == null){
+
+        var inputElement = document.createElement('p')
+        inputElement.id = 'fanstanddisplay'
+        inputElement.innerHTML = "50 %"
+        inputElement.style="display: block;width: 60px; margin-left: 240px; margin-right: 0px;margin-bottom:0px;margin-top:0px"
+        parentElement.appendChild(inputElement)
+    
+        
+        var inputElement = document.createElement('input');
+        inputElement.id = 'fanstand';
+        inputElement.type = 'range';
+        inputElement.onchange = function(evt){updateFanStandDisplay(evt.target.value)}
+
+        parentElement.appendChild(inputElement)
+
+
+        var inputElement = document.createElement('p')
+        inputElement.id = 'fanflowrate'
+        inputElement.style="display: inline; margin-left:30px;"
+        parentElement.appendChild(inputElement)
+        
+        updateFanFlowDisplay()
+
+
+    }
+   
+    
+
+}
+
+
+
+
+
+function updateFanStandDisplay(val){
+
+    elem = document.getElementById('fanstanddisplay')
+    elem.innerHTML = val+" %"
+
+    changeActualFlow(actualFanFlowRate())
+
+    updateFanFlowDisplay()
+    
+}
+
+function actualFanFlowRate(){
+    
+    stand = document.getElementById('fanstand').value
+    inittotalflow = document.getElementById('totalflow').value
+
+    val = stand/100*inittotalflow*2 //*2 because 50% corresponds to init total flow
+    
+    return val
+}
+
+function updateFanFlowDisplay(){
+
+    val = actualFanFlowRate()
+
+    elem = document.getElementById('fanflowrate')
+    elem.innerHTML = val.toFixed(0)+" m³/h"
+    
+}
+
+
 function createFlowDisplay(number,width,marginRight,totalNumberOfVents){
 
-	horizontal = document.getElementsByClassName('horizontal')[0];
-	var inputElement = document.createElement('p');
+	actualflowdiv = document.getElementById('actualflowdisplay');
 
+	var inputElement = document.createElement('p');
 	inputElement.id = 'flow'+number+'display';
 	inputElement.className = 'flowdisplay';
 
-	horizontal.appendChild(inputElement);
+	actualflowdiv.appendChild(inputElement);
 
 
 	inputElement.style = "width:"+width+"px;margin-left:0px;margin-right:"+marginRight+"px";
@@ -320,72 +358,351 @@ function createFlowDisplay(number,width,marginRight,totalNumberOfVents){
 	if (number==totalNumberOfVents){
 		inputElement.style = "width:60px;margin-left:0px;margin-right:"+"0"+"px";
 	}	
-	
 	inputElement.innerHTML  = "0 m³/h";
-	
+}
+
+function createFlowDisplayLabel(){
+    actualflowdiv = document.getElementById('actualflowdisplay');
+
+	var inputElement = document.createElement('p');
+	actualflowdiv.appendChild(inputElement);
+	inputElement.innerHTML  = "Current flows";
+    inputElement.setAttribute("lng-tag","current_flows")
+    inputElement.className = "flowdisplay";
+    inputElement.style = "margin-left:50px";
+    inputElement.style.fontWeight = "bold"
+    
+    targetflowdiv = document.getElementById('targetflowdisplay');
+
+	var inputElement = document.createElement('p');
+	targetflowdiv.appendChild(inputElement);
+	inputElement.innerHTML  = "Target flows";
+    inputElement.setAttribute("lng-tag","target_flows")
+    inputElement.className = "flowdisplay";
+    inputElement.style = "margin-left:50px";
+    inputElement.style.fontWeight = "bold"
+        
+}    
+
+function createTargetFlowDisplay(number,width,marginRight,totalNumberOfVents){
+
+	targetflowdiv = document.getElementById('targetflowdisplay');
+
+	var inputElement = document.createElement('p');
+	inputElement.id = 'targetflow'+number+'display';
+	inputElement.className = 'flowdisplay';
+
+	targetflowdiv.appendChild(inputElement);
+
+
+	inputElement.style = "width:"+width+"px;margin-left:0px;margin-right:"+marginRight+"px";
+	if (number==1){
+		inputElement.style = "width:60px;margin-left:10px;margin-right:"+marginRight+"px";
+	}	
+	if (number==totalNumberOfVents){
+		inputElement.style = "width:60px;margin-left:0px;margin-right:"+"0"+"px";
+	}	
+	inputElement.innerHTML  = "0 m³/h";
+
+    
 }
 
 
+
 function createNetWorkInputs(n,spacing){
+
+    createFanInput()
 
 	for (let i=0;i<n;i++){
 
 		createInput(i+1,spacing,n);
 		createFlowDisplay(i+1,60,spacing,n);
+        createTargetFlowDisplay(i+1,60,spacing,n)
 	}
+    
+    createFlowDisplayLabel()
+    
 }
 
-function getTargetFlow(){
-
-	flow = parseFloat(document.getElementById("totalflow").value)
+function getTargetFlows(){
 	vents = parseInt(document.getElementById("numberofvents").value)
-	
-	targetFlow = flow/vents
-		
-	return targetFlow
+    values = []
 
+    for (let i=0; i<vents;i++){
+        inputid = "input"+i
+        
+        values.push(document.getElementById(inputid).value)
+     
+    }
+		
+	return values
 }
+
+function getCurrentFlows(){
+	vents = parseInt(document.getElementById("numberofvents").value)
+    values = []
+
+    for (let i=0; i<vents;i++){
+        inputid = "input"+i
+        
+        values.push(document.getElementById(inputid).value)
+     
+    }
+		
+	return values
+}
+
+
+
 function adjustTarget(){
 	
-	document.getElementById("targetflow").innerHTML = getTargetFlow().toFixed(1)
+    vents = parseInt(document.getElementById("numberofvents").value)
+
+    if (document.getElementById("targetflowratedefinition").value == "uniform"){
+
+        for (let i=0; i<vents;i++){
+            inputid = "input"+i
+            
+            inputElement = document.getElementById(inputid)
+            inputElement.value = computeUniformTarget().toFixed(0)
+        }
+    }
+    
+    
+    //showHideSuccessFlag(pyodide.globals.get("flows").toJs())
+    
+}
+
+
+function changeTargetFlowsDefinition(){
+    
+    cleanTargetFlowRates()
+    fillTargetFlowRates()
+    updateTargetDisplay()
+}
+
+function computeUniformTarget(){
+    
+    flow = parseFloat(document.getElementById("totalflow").value)
+	vents = parseInt(document.getElementById("numberofvents").value)
+    return flow/vents
+}
+
+function cleanTargetFlowRates(){
+    targetDiv = document.getElementById("targetinputs")
+    while(targetDiv.firstChild){
+        targetDiv.removeChild(targetDiv.firstChild);
+    }
+}
+
+
+
+function fillTargetFlowRates(){
+
+    totalFlow  =  document.getElementById("totalflow")
+    targetDiv = document.getElementById("targetinputs")
+     
+    vents = parseInt(document.getElementById("numberofvents").value)
+	targetType = document.getElementById("targetflowratedefinition").value
+
+
+    for (let i=0; i<vents;i++){
+        var input = document.createElement("input");
+        input.type = "number"
+        input.className = "numberinput"
+        input.id = "input"+i
+
+        input.value = computeUniformTarget().toFixed(0)
+        input.onchange = function(){changeOneTargetFlowRate()}
+
+        if (targetType=="uniform"){
+            input.disabled= true
+        }
+        else{
+            input.disabled = false
+        }
+        targetDiv.append(input)
+    }
+}
+
+
+function updateTargetDisplay(){
+    
+    n = parseInt(document.getElementById("numberofvents").value)
+
+    
+	for (let i=0;i<n;i++){
+		document.getElementById("targetflow"+(i+1)+"display").innerHTML = document.getElementById("input"+i).value+" m³/h"
+	}
+
+}
+
+function changeOneTargetFlowRate(){
+    
+    updateTargetDisplay()
+
+    //showHideSuccessFlag(pyodide.globals.get("flows").toJs())
+
+}        
+
+
+function changeInitFlowsDefinition(){
+    
+    cleanInitialFlowRates()
+    fillInitialFlowRates()
+    
+    changeInitialCondition()
+}
+    
+    
+function cleanInitialFlowRates(){
+    targetDiv = document.getElementById("initialinputs")
+    while(targetDiv.firstChild){
+        targetDiv.removeChild(targetDiv.firstChild);
+    }
+    
+    //also have to reset the buttons
+    resetAllVentPositions()
+    
+}
+
+function fillInitialFlowRates(){
+
+    totalFlow  =  document.getElementById("totalflow")
+    targetDiv = document.getElementById("initialinputs")
+     
+    vents = parseInt(document.getElementById("numberofvents").value)
+	targetType = document.getElementById("initflowratedefinition").value
+
+    if (targetType == "userDefined"){
+        totalFlow.disabled = true
+    }
+    else{
+        totalFlow.disabled = false
+    }
+
+    for (let i=0; i<vents;i++){
+        var input = document.createElement("input");
+        input.type = "number"
+        input.className = "numberinput"
+        input.id = "initialinput"+i
+
+        input.value = computeUniformTarget().toFixed(0)
+        input.onchange = function(input){changeOneInitialFlowRate(input)}
+
+        if (targetType=="uniform"){
+            input.disabled= true
+        }
+        else if (targetType=="random"){
+            input.disabled = true
+        }
+        else{
+            input.disabled = false
+        }
+        targetDiv.append(input)
+    }
+}
+
+
+function changeOneInitialFlowRate(e){
+    //called when changing manually one of the initial flow rates
+    // this must insure that the total flow rate is conserved
+    // propose proportional change
+
+    var caller = e.target || e.srcElement; // indentify caller object
+    
+    currentTotalInitialFlowRate = 0
+
+    for (let i=0; i<vents;i++){
+        inputid = "initialinput"+i
+        flowValue = parseInt(document.getElementById(inputid).value)
+        currentTotalInitialFlowRate += flowValue
+    }
+    document.getElementById("totalflow").value = currentTotalInitialFlowRate
+    
+    //imbalance = currentTotalInitialFlowRate - targetTotalFlowValue
+    
+    /*if (Math.abs(imbalance) > 0 ){
+        showImbalanceWarning(true,imbalance)
+    }
+    else{
+        showImbalanceWarning(false,0)
+    }*/
+
+    changeInitialCondition()
+}
+
+
+function showImbalanceWarning(flag,value){
+    
+    if (flag){
+        document.getElementById("imbalancewarning").innerHTML = "Warning: imbalance of "+value+" m³/h"
+    }
+    else{
+        document.getElementById("imbalancewarning").innerHTML = ""
+    }
+}
+
+function getInitValues(){
+    vents = parseInt(document.getElementById("numberofvents").value)
+
+    values = []
+
+    for (let i=0; i<vents;i++){
+        inputid = "initialinput"+i
+        console.log(inputid)
+        flowValue = parseInt(document.getElementById(inputid).value)
+        values.push(flowValue)
+        
+    }    
+    return values
+}
+
+function updateAfterNumberOfDuctsChanged(numberOfDucts){
+
+    initialConditionType = document.getElementById("initflowratedefinition").value
+    initvalues = []
+
+    deleteClassElements('network-svg')
+    deleteClassElements('counter')
+    deleteClassElements('flowdisplay')
+
+    
+    spaceBetweenDucts = drawNetwork(numberOfDucts)
+    drawNetworkArrows(numberOfDucts)
+    createNetWorkInputs(numberOfDucts,spaceBetweenDucts)
+
+    changeInitFlowsDefinition()
+    changeTargetFlowsDefinition()
+
+
+    if (initialConditionType == 'userDefined'){
+        initvalues = getInitValues()
+    }
+
+    initNetwork(numberOfDucts,initialConditionType,initvalues)
 
 }
 
 
-function setnumberofducts(numberOfDucts){
+async function changeInitialCondition(){
+    
+    numberOfDucts = parseInt(document.getElementById("numberofvents").value)
+    
+    initialConditionType = document.getElementById("initflowratedefinition").value
 
-	deleteClassElements('network-svg')
-	deleteClassElements('counter')
-	deleteClassElements('flowdisplay')
+    initvalues = []
+    if (initialConditionType == 'userDefined'){
+        initvalues = getInitValues()
+        
+    }
 
-	spaceBetweenDucts = drawNetwork(numberOfDucts)
-	drawNetworkArrows(numberOfDucts)
-	createNetWorkInputs(numberOfDucts,spaceBetweenDucts)
-	main(numberOfDucts)
-
-	adjustTarget()
-
+    
+    await initNetwork(numberOfDucts,initialConditionType,initvalues)
+    update(numberOfDucts)
+ 
+    updateInitialConditionDisplay()
 }
 
-async function changeFlow(flowValue){
 
-	let pyodide = await initPyodide;
 
-	window.newFlowValue = flowValue;
-
-	pyodide.runPython(`
-
-from js import newFlowValue
-n.changeTotalFlowRate(newFlowValue)
-flows = n.getFlows()
-dp = n.getPressureDrop()
-`
-);
-
-jsFlows = pyodide.globals.get("flows").toJs();
-pressureDrop = pyodide.globals.get("dp").toFixed(1);
-updateDisplay(jsFlows,pressureDrop,stands);
-
-adjustTarget()
-
-}

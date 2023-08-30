@@ -5,6 +5,7 @@
         <script src="https://cdn.jsdelivr.net/pyodide/v0.20.0/full/pyodide.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.0/dist/svg.min.js"></script>
         <script type="text/javascript" src="ventilation_functions.js"></script> 
+        <script type="text/javascript" src="python_calls.js"></script> 
         <script type="text/javascript" src="translations.js"></script> 
         <link rel="stylesheet" href="./style.css">
     </head>
@@ -16,9 +17,11 @@
                 <img class="logo" src="https://images.prismic.io/bbri/55e684ca-e04b-4dc1-92b4-2859a8bc6cad_WTC_00001_L_Horizontaal_pos_RGB.png?auto=compress,format&amp;rect=0,0,800,125&amp;w=1184&amp;h=185" alt="BBRI logo">
             </span>
             <div class="select-language">
-                <div class="Select-module_select__3oApo Select-module_withoutLabel__2gIFt">
-                    <div class="Select-module_input__3pZ0Q">FR<div class="Select-module_controls__7xN2h">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg></div></div></div>
+                <select name="language" id="language" onchange="translatepage(this.value)">
+                    <option value="FR">FR</option>
+                    <option value="NL">NL</option>
+                    <option value="EN">EN</option>
+                </select>            
             </div>            
         </header>
 
@@ -30,19 +33,52 @@
                 <form>
                     <p>
                         <label lng-tag="numberofvents" for="numberofvents">Number of vents:</label>
-                        <input class="numberinput" type="number" id="numberofvents" name="quantity" min="2" value="5" max="8" onchange="setnumberofducts(this.valueAsNumber)">
+                        <input class="numberinput" type="number" id="numberofvents" name="quantity" min="2" value="5" max="8" onchange="updateAfterNumberOfDuctsChanged(this.valueAsNumber)">
                     </p>
+                    <h3 lng-tag="initivalvaluessection">Network initialization</h3>
+
                     <p>
-                        <label lng-tag="totalflowrate" for="lname">Total flow rate:</label>
-                        <input class="numberinput" type="number" id="totalflow" name="totalflow" min="50" value="200" max="500" onchange="changeFlow(this.valueAsNumber)">
+                        <label lng-tag="inittotalflowrate" for="lname">Total flow rate for initialization</label>
+                        <input class="numberinput" type="number" id="totalflow" name="totalflow" min="50" value="200" max="500" onchange="changeInitFlow(this.valueAsNumber)">
                     </p>
+
+                    <p>
+                        <label lng-tag="inittype" for="lname">network_pressure_drops</label>
+                        <select class="dropdowninput" id="initflowratedefinition" name="initflowratedefinition" onchange="changeInitFlowsDefinition()"> 
+                         <option lng-tag="random_pressure_drops" value="random">random_pressure_drops</option>
+                         <option lng-tag="balanced_pressure_drops" value="uniform">balanced_pressure_drops</option>
+                        <option lng-tag="from_user_defined_flow_rates" value="userDefined">from_user_defined_flow_rates</option>
+                        </select>
+                    </p>
+                    <p> <label lng-tag="initial_flow_rates">Initial flow rates</label>
+                        <span id="initialinputs">
+                        </span>
+                    </p>
+                    <h3 lng-tag="targetvaluessection">Target values</h3>
+
+                    <p>
+                        <label lng-tag="targettype" for="lname">Target flow rate definition</label>
+                        <select class="dropdowninput" id="targetflowratedefinition" name="targetflowratedefinition" onchange="changeTargetFlowsDefinition()"> 
+                         <option lng-tag="uniform_target" value="uniform">Uniform</option>
+                        <option lng-tag="user_defined_targets" value="userdefined">Manual entry</option>
+                        </select>
+                    </p>
+                    <p> <label lng-tag="targetvalues">Target flow rates</label>
+                        <span id="targetinputs">
+                        </span>
+                    </p>
+                    <p> <span id="imbalancewarning">
+                        </span>
+                    </p>
+                    
+                    
                 </form> 
             </div>
 
             <div class="instructions">
-                <h2 lng-tag="instructions-title">Instructions</h2>
-                <span lng-tag="instructions-content">Try to set the different vents to have an equal flow on each branch </span> 
-                <b>( <span lng-tag="target">target</span> = <span id='targetflow'></span> <span lng-tag="targettext"> m3/h on each vent</span> </b>)
+                <h2 lng-tag="instructions-title"></h2>
+                <span lng-tag="instructions-content"></span> 
+                <!--<b>( <span lng-tag="target">target</span> = <span id='targetflow'></span> <span lng-tag="targettext"> m3/h on each vent</span> </b>)-->
                 <br>
                 <span lng-tag="instructions-criteria"></span>
             </div>
@@ -50,17 +86,23 @@
 
             <div class="wholepicture" style="position: relative; left: 0; top: 0;margin-top:40px">
 
+                <div id="fancontroldiv">
+                </div>
+
                 <div class="networkdiv">
                     <!--<img src="network_alone_plain.svg" width="500" class="network"/>-->
+                    <img src="fan2.svg" class="fan" width="48"/>
+
                 </div>
-                <img src="fan2.svg" class="fan" width="48"/>
 
                 <form class="form-inline">
                 </form>
 
-                <div class="horizontal">
+                <div class="horizontal" id="actualflowdisplay">
                 </div>
 
+                <div class="horizontal" id="targetflowdisplay">
+                </div>
 
             </div>
 
@@ -69,7 +111,7 @@
             </div>
 
             <div>
-                <h2 id="successflag"> </h2>
+                <h2 lng-tag="success" id="successflag"> </h2>
             </div>
 
 
@@ -97,10 +139,9 @@
 
             let lastChangedVent = 0;
 
-            setnumberofducts(parseInt(document.getElementById('numberofvents').value));
+            updateAfterNumberOfDuctsChanged(parseInt(document.getElementById('numberofvents').value));
 
             adjustTarget();
-
             translatepage('FR');
 
 
